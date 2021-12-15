@@ -38,7 +38,7 @@ void setValues(int N, int M, int **&table) {
 }
 
 //prints table to the console
-void printTable(int N,int M,int **table) {
+void printTable(int N,int M,int **&table) {
 	for (int i = 0; i < N; i++) {
 		for (int j = 0; j < M; j++) {
 			std::cout << table[i][j];
@@ -48,6 +48,99 @@ void printTable(int N,int M,int **table) {
 	std::cout << std::endl << std::endl << std::endl;
 }
 
+//memory allocation
+void allocateMemory(int N, int M, int **&table) {
+	table = new int* [N];
+	for (int i = 0; i < N; i++) {
+		table[i] = new int[M];
+	}
+}
+
+//swaping tables
+void swapTable(int**&table1, int** table2,int N,int M) {
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < M; j++) {
+			table1[i][j] = table2[i][j];
+		}
+	}
+}
+
+//single rotation
+void iterate(int N,int M,int**&asd,int**&table) {
+
+	enum Direction { up, down, left, right };
+	Direction direction = right;
+
+	int iterationCounter=0;
+	int n=0;
+	int m=0;
+
+	
+	while (1) {
+
+		if (direction == right) {
+			if (m != M - 1 - iterationCounter) {
+				asd[n][m] = table[n][m + 1];
+				m++;
+			}
+
+			else {
+				asd[n][m] = table[n + 1][m];
+				direction = down;
+				if (n != N - 1) {
+					n++;
+				}
+			}
+		}
+
+		if (direction == down) {
+			if (n != N - 1 - iterationCounter) {
+				asd[n][m] = table[n + 1][m];
+				n++;
+			}
+			else {
+
+				asd[n][m] = table[n][m - 1];
+				direction = left;
+				if (m != 0) {
+					m--;
+				}
+			}
+		}
+
+		if (direction == left) {
+			if (m != iterationCounter) {
+				asd[n][m] = table[n][m - 1];
+				m--;
+			}
+			else {
+				asd[n][m] = table[n - 1][m];
+				direction = up;
+				if (n != 0) {
+					n--;
+				}
+			}
+		}
+
+		if (direction == up) {
+			if (n != iterationCounter) {
+				asd[n][m] = table[n - 1][m];
+				n--;
+			}
+			else {
+				direction = right;
+
+				iterationCounter++;
+				n = iterationCounter;
+				m = iterationCounter;
+				if (n >= N / 2 || m >= M / 2) { break; }
+			}
+		}
+	}
+
+}
+
+// main function :)
 int main()
 {
 	//dimensions
@@ -59,8 +152,6 @@ int main()
 
 	int R;
 
-	enum Direction { up, down, left, right };
-
 	std::cout << "put number of columns" << std::endl;
 	std::cin >> M;
 	
@@ -70,123 +161,39 @@ int main()
 	std::cout << "put number of iterations" << std::endl;
 	std::cin >> R;
 
+	//some exceptions
 	if (R < 0) {
 		std::cout << "imposible number of iterations";
 		return 0;
 	}
-
 	if (M == 1 || N == 1) {
 		std::cout << "it is no longer 2 dimensional matrix";
 		return 0;
 	}
 
+
 	//memory allocation
-	table = new int* [N];
-	for (int i = 0; i < N; i++) {
-		table[i] = new int[M];
-	}
+	allocateMemory(N, M, table);
+	allocateMemory(N, M, asd);
 
-	asd = new int* [N];
-	for (int i = 0; i < N; i++) {
-		asd[i] = new int[M];
-	}
-
-
+	//set random values and print them to the console
 	setValues(N, M, table);
 	printTable(N, M,table);
 
 	//iterations
-	
-	
-	Direction direction;
+	swapTable(asd, table, N, M);
 
+	//rotating matrix
 	for (int k = 0; k < R; k++) {
+		//single rotation on matrix
+		iterate(N, M, asd, table);
 
-		direction = right;
-
-		int iterationCounter = 0;
-		int n = 0;
-		int m = 0;
-
-		for (int i = 0; i < N; i++) {
-			for (int j = 0; j < M; j++) {
-				asd[i][j] = table[i][j];
-			}
-		}
-
-		while (1) {
-
-			if (direction == right) {
-				if (m != M - 1 - iterationCounter) {
-					asd[n][m] = table[n][m + 1];
-					m++;
-				}
-
-				else {
-					asd[n][m] = table[n + 1][m];
-					direction = down;
-					if (n != N - 1) {
-						n++;
-					}
-				}
-			}
-
-			if (direction == down) {
-				if (n != N - 1 - iterationCounter) {
-					asd[n][m] = table[n + 1][m];
-					n++;
-				}
-				else {
-
-					asd[n][m] = table[n][m - 1];
-					direction = left;
-					if (m != 0) {
-						m--;
-					}
-				}
-			}
-
-			if (direction == left) {
-				if (m != iterationCounter) {
-					asd[n][m] = table[n][m - 1];
-					m--;
-				}
-				else {
-					asd[n][m] = table[n - 1][m];
-					direction = up;
-					if (n != 0) {
-						n--;
-					}
-				}
-			}
-
-			if (direction == up) {
-				if (n != iterationCounter) {
-					asd[n][m] = table[n - 1][m];
-					n--;
-				}
-				else {
-					//asd[n][m] = asd[n][m] = table[n][m+1];;
-					direction = right;
-
-					iterationCounter++;
-					n = iterationCounter;
-					m = iterationCounter;
-					if (n >= N / 2 || m >= M / 2) { break; }
-				}
-			}
-		}
-
-		for (int i = 0; i < N; i++) {
-			for (int j = 0; j < M; j++) {
-				table[i][j] = asd[i][j];
-
-			}
-		}
-
+		//swaping buffer matrix with main matrix
+		swapTable(table, asd, N, M);
 		printTable(N, M, table);
 
 	}
+	delete []asd;
 
 	return 0;
 }
